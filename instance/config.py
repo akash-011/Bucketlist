@@ -8,6 +8,8 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET = os.getenv('SECRET')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    RESTPLUS_SWAGGER_UI_DOC_EXPANSION = 'list'
+    
 
 class DevelopmentConfig(Config):
     """Configurations for Development."""
