@@ -2,7 +2,7 @@ from .restplus import api
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask
 from instance.config import app_config
-from .hello import hello_name
+from .bucket import hello_name
 
 db = SQLAlchemy()
 

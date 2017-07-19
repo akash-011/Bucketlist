@@ -5,7 +5,7 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    id = db.Column(db.interger, primary_key = True)
+    id = db.Column(db.Integer, primary_key = True)
     user_email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String())
     buckets = db.relationship('Bucketlist', order_by='Bucketlist.id', cascade = "all, delete-orphan")
@@ -28,13 +28,13 @@ class Bucketlist(db.Model):
 
     __tablename__ = "bucketlists"
 
-    id = db.Column(db.interger, primary_key = True)
+    id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(255))
     date_created = db.Column(db.DateTime, default = db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default = db.func.current_timestamp(), onupdate= db.func.current_timestamp())
-    created_by = db.Comumn(db.Interger, db.ForeignKey(User.id))
+    created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    def __init__(self.name):
+    def __init__(self,name,created_by):
         self.name = name
         self.created_by = created_by
 
