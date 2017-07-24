@@ -1,5 +1,8 @@
-from app import db
+
 from flask_bcrypt import Bcrypt
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class User(db.Model):
 
@@ -8,7 +11,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     user_email = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String())
-    buckets = db.relationship('Bucketlist', order_by='Bucketlist.id', cascade = "all, delete-orphan")
+
 
     def __init__(self,email,password):
         self.email = email
@@ -32,15 +35,15 @@ class Bucketlist(db.Model):
     name = db.Column(db.String(255))
     date_created = db.Column(db.DateTime, default = db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default = db.func.current_timestamp(), onupdate= db.func.current_timestamp())
-    created_by = db.Column(db.Integer, db.ForeignKey(User.id))
 
-    def __init__(self,name,created_by):
+
+    def __init__(self,name):
         self.name = name
-        self.created_by = created_by
+
 
     def save(self):
         db.session.add(self)
-        db.session.commit(self)
+        db.session.commit()
 
     @staticmethod
     def get_all():
