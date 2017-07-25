@@ -1,7 +1,7 @@
 from app import api
 from flask_restplus import Resource, fields
 from .models import Bucketlist, db
-from flask import request
+from flask import request, abort
 
 
 bucket = api.namespace('bucketlists', description= "Welcome")
@@ -57,3 +57,16 @@ class BucketManipulation(Resource):
         return{
         'Message': "Bucket list deleted "
         }, 200
+
+
+    @api.expect(bucket_create)
+    @api.marshal_with(buckett)
+    def put(self,id):
+            new_name = request.json['name']
+            try:
+                bucket_list = Bucketlist.query.filter_by(id=id).first()
+                bucket_list.name = new_name
+                bucket_list.save()
+                return bucket_list, 200
+            except AttributeError:
+                abort(404)

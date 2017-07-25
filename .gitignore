@@ -3,3 +3,4 @@ bucketenv/*
 __pycache__/
 .idea/*
 migrations/
+.env
