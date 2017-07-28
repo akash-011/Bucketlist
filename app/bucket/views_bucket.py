@@ -1,6 +1,6 @@
 from app import api
 from flask_restplus import Resource, fields
-from .models import Bucketlist, db
+from ..models import Bucketlist, db
 from flask import request, abort
 
 
@@ -12,6 +12,7 @@ buckett = api.model('Buckett', {
         'name': fields.String(required=True ,description='This is the name of the bucketlist'),
         'date_created': fields.DateTime,
         'date_modified': fields.DateTime,
+        'created_by': fields.Integer,
 })
 
 bucket_create = api.model('create_bucket',{
