@@ -1,6 +1,6 @@
 from app import api
 from flask_restplus import Resource, fields
-from ..models import Bucketlist, db
+from ..models import Bucketlist, db, User
 from flask import request, abort
 
 
@@ -25,19 +25,31 @@ bucket_create = api.model('create_bucket',{
 @bucket.route('/')
 class Bucketlists(Resource):
 
+    @api.header('Authorization', 'JWT Token', required=True)
     @api.expect(bucket_create)
     @api.marshal_with(buckett)
     def post(self):
-        name = request.json['name']
-        bucketlist = Bucketlist(name = name)
-        bucketlist.save()
-        return bucketlist, 201
+        token = request.headers.get('Authorization')
+        if token:
+            user_id = User.decode_token(token)
+            
+            if not isinstance(user_id,str): 
+                name = request.json['name']
+                bucketlist = Bucketlist(name = name,created_by=user_id)
+                bucketlist.save()
+                return bucketlist, 201
+            abort (401, user_id)
 
+    @api.header('Authorization', 'JWT Token', required=True)
     @api.marshal_with(buckett)
     def get(self):
-        bucketlists = Bucketlist.query.all()
-        return bucketlists, 200
-
+        token = request.headers.get('Authorization')
+        if token:
+            user_id = User.decode_token(token)
+            if not isinstance(user_id, str):
+                bucketlists = Bucketlist.query.filter_by(created_by=user_id)
+                return bucketlists, 200
+        abort(401)    
 
 
 @bucket.route('/<int:id>')
