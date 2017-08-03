@@ -32,8 +32,8 @@ class Bucketlists(Resource):
         token = request.headers.get('Authorization')
         if token:
             user_id = User.decode_token(token)
-            
-            if not isinstance(user_id,str): 
+
+            if not isinstance(user_id,str):
                 name = request.json['name']
                 bucketlist = Bucketlist(name = name,created_by=user_id)
                 bucketlist.save()
@@ -41,45 +41,56 @@ class Bucketlists(Resource):
             abort (401, user_id)
 
     @api.header('Authorization', 'JWT Token', required=True)
-    @api.marshal_with(buckett)
+    @api.marshal_list_with(buckett)
     def get(self):
         token = request.headers.get('Authorization')
         if token:
             user_id = User.decode_token(token)
             if not isinstance(user_id, str):
-                bucketlists = Bucketlist.query.filter_by(created_by=user_id)
+                bucketlists = Bucketlist.query.filter_by(created_by=user_id).all()
                 return bucketlists, 200
-        abort(401)    
+            abort(401,user_id)
 
 
 @bucket.route('/<int:id>')
 class BucketManipulation(Resource):
 
+    @api.header('Authorization', 'JWT Token', required=True)
     @api.marshal_with(buckett)
     def get(self,id):
-        bucket_list = Bucketlist.query.filter_by(id=id).first()
-        if not bucket_list:
-            abort(404)
-        return bucket_list, 200
+        token = request.headers.get('Authorization')
+        if token:
+            user_id = User.decode_token(token)
+            bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+            if not bucket_list:
+                abort(404)
+            return bucket_list, 200
 
+    @api.header('Authorization', 'JWT Token', required=True)
     def delete(self,id):
-        bucket_list = Bucketlist.query.filter_by(id=id).first()
-        if not bucket_list:
-            abort(404)
-        bucket_list.delete()
-        return{
-        'Message': "Bucket list deleted "
-        }, 200
+        token = request.headers.get('Authorization')
+        if token:
+            user_id = User.decode_token(token)
+            bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+            if not bucket_list:
+                abort(404)
+                bucket_list.delete()
+                return{
+                        'Message': "Bucket list deleted "
+                        }, 200
 
-
+    @api.header('Authorization', 'JWT Token', required=True)
     @api.expect(bucket_create)
     @api.marshal_with(buckett)
     def put(self,id):
-            new_name = request.json['name']
-            try:
-                bucket_list = Bucketlist.query.filter_by(id=id).first()
-                bucket_list.name = new_name
-                bucket_list.save()
-                return bucket_list, 200
-            except AttributeError:
-                abort(404)
+            token = request.headers.get('Authorization')
+            if token:
+                user_id = User.decode_token(token)
+                new_name = request.json['name']
+                try:
+                    bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                    bucket_list.name = new_name
+                    bucket_list.save()
+                    return bucket_list, 200
+                except AttributeError:
+                    abort(404)
