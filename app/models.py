@@ -90,3 +90,30 @@ class Bucketlist(db.Model):
 
     def __repr__(self):
         return "<Bucketlist: {}>".format(self.name)
+
+class Bucketitems(db.Model):
+
+    __tablename__ = "bucketitems"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255))
+    date_created = db.Column(db.DateTime, default = db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default = db.func.current_timestamp(), onupdate= db.func.current_timestamp())
+    done = db.Column(db.Boolean, default=False)
+    bucketlist_id = db.Column(db.Integer, db.ForeignKey(Bucketlist.id))
+
+    def __init__(self,name,bucketlist_id):
+        self.name = name
+        self.bucketlist_id = bucketlist_id
+
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def __repr__(self):
+        return '<Bucketlist Item {}>'.format(self.name)
