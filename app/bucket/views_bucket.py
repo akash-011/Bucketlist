@@ -4,7 +4,7 @@ from ..models import Bucketlist, db, User, Bucketitems
 from flask import request, abort
 
 
-bucket = api.namespace('bucketlists', description= "Welcome")
+bucket = api.namespace('bucketlists', description= "Bucketlist Endpoints")
 
 bucket_item = api.model('bucket_item',{
         'id': fields.Integer(required=True,readOnly=True),
@@ -18,6 +18,7 @@ bucket_item_update = api.model('bucket_item_update', {
     'name': fields.String(description='Name of the bucketlist item'),
     'done': fields.Boolean(description='Status of the bucketlist item')
 })
+
 buckett = api.model('Buckett', {
         'id': fields.Integer(required=True,readOnly=True),
         'name': fields.String(required=True ,description='This is the name of the bucketlist'),
@@ -77,7 +78,7 @@ class BucketManipulation(Resource):
             user_id = User.decode_token(token)
             bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
             if not bucket_list:
-                abort(404)
+                abort(404,"Bucketlist does not exist")
             return bucket_list, 200
 
     @api.header('Authorization', 'JWT Token', required=True)
