@@ -80,6 +80,7 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.client().get('bucketlists/1',headers={'Authorization':token , 'content-type': 'application/json'})
         self.assertIn('Go to London', str(result.data))
 
+    
 
     def tearDown(self):
 
