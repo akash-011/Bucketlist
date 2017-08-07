@@ -152,18 +152,20 @@ class BucketItemWithID(Resource):
         if token:
             user_id = User.decode_token(token)
             try:
-                bucketlist = Bucketlists.query.filter_by(id=id,created_by=user_id).first()
+
+                bucketlist = Bucketlist.query.filter_by(id=id,created_by=user_id).first()
                 try:
-                    item_update = BucketItems.query.filter_by(id=item_id)
+                    item_update = Bucketitems.query.filter_by(id=item_id)
                     try:
                         new_name = request.json['name']
                         item_update.name = new_name
+                        return item_update
                     except KeyError:
                         pass
                     try:
                         new_status = request.json['done']
                         item_update.done = new_status
-
+                        return item_update
                     except KeyError:
                         pass
                 except AttributeError:

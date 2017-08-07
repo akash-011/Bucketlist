@@ -12,6 +12,7 @@ class BucketlistTestCase(unittest.TestCase):
         self.app = create_app(config_name = "testing")
         self.client = self.app.test_client
         self.bucketlist = {'name': 'Go to Old trafford'}
+        self.bucketitem = {'name': 'Watch game'}
 
         with self.app.app_context():
             db.create_all()
@@ -80,7 +81,34 @@ class BucketlistTestCase(unittest.TestCase):
         result = self.client().get('bucketlists/1',headers={'Authorization':token , 'content-type': 'application/json'})
         self.assertIn('Go to London', str(result.data))
 
-    
+    def test_bucketitem_create(self):
+        self.register_user()
+        res_login = self.login_user()
+        token = json.loads(res_login.data.decode())['token']
+        bucket_post = self.client().post('/bucketlists/', data =json.dumps(self.bucketlist), headers={'Authorization':token , 'content-type': 'application/json'})
+        result = self.client().post('/bucketlists/1/items', data =json.dumps(self.bucketitem), headers={'Authorization':token , 'content-type': 'application/json'})
+        self.assertIn('Watch game',str(result.data))
+
+
+    def test_get_bucketitem_update(self):
+        self.register_user()
+        res_login = self.login_user()
+        token = json.loads(res_login.data.decode())['token']
+        bucket_post = self.client().post('/bucketlists/', data =json.dumps(self.bucketlist), headers={'Authorization':token , 'content-type': 'application/json'})
+        bucket_item = self.client().post('/bucketlists/1/items', data =json.dumps(self.bucketitem), headers={'Authorization':token , 'content-type': 'application/json'})
+        new_data = {'name': 'Go on tour'}
+        put_req = self.client().put('/bucketlists/1/items/1',data=json.dumps(new_data),headers={'Authorization':token , 'content-type': 'application/json'})
+        self.assertIn('Go on tour', str(put_req.data))
+
+
+    def test_bucketitem_delete(self):
+        self.register_user()
+        res_login = self.login_user()
+        token = json.loads(res_login.data.decode())['token']
+        bucket_post = self.client().post('/bucketlists/', data =json.dumps(self.bucketlist), headers={'Authorization':token , 'content-type': 'application/json'})
+        bucket_item = self.client().post('/bucketlists/1/items', data =json.dumps(self.bucketitem), headers={'Authorization':token , 'content-type': 'application/json'})
+        result = self.client().delete('/bucketlists/1/items/1', headers ={'Authorization':token , 'content-type': 'application/json'})
+        self.assertEqual(result.status_code,200)
 
     def tearDown(self):
 
