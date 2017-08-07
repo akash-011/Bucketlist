@@ -2,7 +2,7 @@ from app import api
 from flask_restplus import Resource, fields
 from ..models import Bucketlist, db, User, Bucketitems
 from flask import request, abort
-
+from .parsers import pagination_arg
 
 bucket = api.namespace('bucketlists', description= "Bucketlist Endpoints")
 
@@ -49,12 +49,15 @@ class Bucketlists(Resource):
             user_id = User.decode_token(token)
 
             if not isinstance(user_id,str):
+
                 name = request.json['name']
                 bucketlist = Bucketlist(name = name,created_by=user_id)
                 bucketlist.save()
                 return bucketlist, 201
             abort (401, user_id)
 
+
+    @api.expect(pagination_arg,validate=True)
     @api.header('Authorization', 'JWT Token', required=True)
     @api.marshal_list_with(buckett)
     def get(self):
@@ -62,8 +65,19 @@ class Bucketlists(Resource):
         if token:
             user_id = User.decode_token(token)
             if not isinstance(user_id, str):
-                bucketlists = Bucketlist.query.filter_by(created_by=user_id).all()
-                return bucketlists, 200
+                args = pagination_arg.parse_args(request)
+                page = args.get('page')
+                per_page = args.get('per_page')
+                search = args.get('q')
+
+                try:
+                    bucketlists = Bucketlist.query.filter_by(created_by=user_id).all()
+                    if search:
+                        bucketlist_search = bucketlists.filter(Bucketlist.name.ilike('%' + search + "%"))
+                        return bucketlist_search.paginate(page,per_page).items, 200
+                    return bucketlists.paginate(page,per_page).items, 200
+                except AttributeError:
+                    abort(404)
             abort(401,user_id)
 
 
@@ -76,23 +90,31 @@ class BucketManipulation(Resource):
         token = request.headers.get('Authorization')
         if token:
             user_id = User.decode_token(token)
-            bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
-            if not bucket_list:
-                abort(404,"Bucketlist does not exist")
-            return bucket_list, 200
+
+            if not isinstance(user_id,str):
+                bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucket_list:
+                    abort(404,"Bucketlist does not exist")
+                return bucket_list, 200
+            abort(401,user_id)
+
 
     @api.header('Authorization', 'JWT Token', required=True)
     def delete(self,id):
         token = request.headers.get('Authorization')
         if token:
             user_id = User.decode_token(token)
-            bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
-            if not bucket_list:
-                abort(404)
-                bucket_list.delete()
-                return{
-                        'Message': "Bucket list deleted "
-                        }, 200
+
+            if not isinstance(user_id,str):
+                bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                if not bucket_list:
+                    abort(404)
+                    bucket_list.delete()
+                    return{
+                            'Message': "Bucket list deleted "
+                            }, 200
+            abort(401,user_id)
+
 
     @api.header('Authorization', 'JWT Token', required=True)
     @api.expect(bucket_create)
@@ -102,14 +124,15 @@ class BucketManipulation(Resource):
             if token:
                 user_id = User.decode_token(token)
                 new_name = request.json['name']
-                try:
-                    bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
-                    bucket_list.name = new_name
-                    bucket_list.save()
-                    return bucket_list, 200
-                except AttributeError:
-                    abort(404)
-
+                if not isinstance(user_id,str):
+                    try:
+                        bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
+                        bucket_list.name = new_name
+                        bucket_list.save()
+                        return bucket_list, 200
+                    except AttributeError:
+                        abort(404)
+                abort(401,user_id)
 
 
 
@@ -127,17 +150,16 @@ class BucketItem(Resource):
 
         if token:
             user_id = User.decode_token(token)
-            try:
-                bucketlist = Bucketlist.query.filter_by(id=id,created_by=user_id).first()
-                if not isinstance(user_id,str):
-                    new_item = Bucketitems(name, id)
-                    new_item.save()
-                    return new_item, 201
-            except AttributeError:
-                abort(404, 'Bucketlist does not exist')
-
-        else:
-            abort(401)
+            if not isinstance(user_id,str):
+                try:
+                    bucketlist = Bucketlist.query.filter_by(id=id,created_by=user_id).first()
+                    if not isinstance(user_id,str):
+                        new_item = Bucketitems(name, id)
+                        new_item.save()
+                        return new_item, 201
+                except AttributeError:
+                    abort(404, 'Bucketlist does not exist')
+            abort(401,user_id)
 
 @bucket.route('/<int:id>/items/<int:item_id>')
 class BucketItemWithID(Resource):
