@@ -66,16 +66,19 @@ class Bucketlists(Resource):
             user_id = User.decode_token(token)
             if not isinstance(user_id, str):
                 args = pagination_arg.parse_args(request)
-                page = args.get('page')
-                per_page = args.get('per_page')
+                page = args.get('page', 1)
+                per_page = args.get('per_page', 5)
                 search = args.get('q')
 
                 try:
-                    bucketlists = Bucketlist.query.filter_by(created_by=user_id).all()
+                    bucketlists = Bucketlist.query.filter_by(created_by=user_id)
+
                     if search:
                         bucketlist_search = bucketlists.filter(Bucketlist.name.ilike('%' + search + "%"))
-                        return bucketlist_search.paginate(page,per_page).items, 200
-                    return bucketlists.paginate(page,per_page).items, 200
+                        buckets = bucketlist_search.paginate(page,per_page,error_out=False)
+                        return buckets.items , 200
+                    else:
+                        return bucketlists.paginate(page,per_page,error_out=False).items, 200
                 except AttributeError:
                     abort(404)
             abort(401,user_id)
@@ -109,6 +112,7 @@ class BucketManipulation(Resource):
                 bucket_list = Bucketlist.query.filter_by(id=id, created_by=user_id).first()
                 if not bucket_list:
                     abort(404)
+                else:
                     bucket_list.delete()
                     return{
                             'Message': "Bucket list deleted "

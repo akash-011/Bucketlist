@@ -49,7 +49,7 @@ class BucketlistTestCase(unittest.TestCase):
         token = json.loads(res_login.data.decode())['token']
         bucket_post = self.client().post('/bucketlists/', data =json.dumps(self.bucketlist), headers={'Authorization':token , 'content-type': 'application/json'})
         self.assertEqual(bucket_post.status_code,201)
-        res = self.client().get('/bucketlists/', headers={'Authorization':token , 'content-type': 'application/json'})
+        res = self.client().get('/bucketlists/', headers={'Authorization':token})
         self.assertEqual(res.status_code,200)
         self.assertIn('Go to Old trafford', str(res.data))
 
