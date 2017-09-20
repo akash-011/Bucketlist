@@ -1,2 +1,7 @@
 bucketenv/*
-DS_Store
+.DS_Store
+__pycache__/
+.idea/*
+migrations/
+.env
+.coverage
