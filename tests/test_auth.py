@@ -32,7 +32,7 @@ class AuthTestCase(unittest.TestCase):
         result = self.client().post('/auth/register', data =json.dumps(self.user_data), headers={'content-type': 'application/json'})
         result_mess = json.loads(result.data)
         self.assertEqual(result.status_code,400)
-        self.assertIn("User already exists",result_mess['message'])
+        self.assertIn("User already exists", result_mess['message'])
 
 
 

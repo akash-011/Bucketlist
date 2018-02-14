@@ -7,11 +7,11 @@ from .parsers import pagination_arg
 bucket = api.namespace('bucketlists', description= "Bucketlist Endpoints")
 
 bucket_item = api.model('bucket_item',{
-        'id': fields.Integer(required=True,readOnly=True),
-        'name': fields.String(required=True),
-        'date_created': fields.DateTime,
-        'date_modified': fields.DateTime,
-        'done': fields.Boolean,
+    'id': fields.Integer(required=True, readOnly=True),
+    'name': fields.String(required=True),
+    'date_created': fields.DateTime,
+    'date_modified': fields.DateTime,
+    'done': fields.Boolean,
 })
 
 bucket_item_update = api.model('bucket_item_update', {
